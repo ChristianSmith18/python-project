@@ -1,0 +1,139 @@
+<header class="panel-heading">
+
+        <h2 class="panel-title">Apertura Periodo Validación</h2>
+</header>
+
+<form method="post" action="">
+    {% csrf_token %}
+{%if estado_seguimiento.estadoValida != 0 or estado_seguimiento.estado_seguimiento != 0 %}
+
+
+<div class="panel-body">
+    <div class="modal-wrapper">
+        <div class="modal-icon">
+            <i class="fa fa-warning"></i>
+        </div>
+            <div class="modal-text">
+                <h4>Atención</h4>
+                <p>Estimado Usuario, para abrir un nuevo periodo debe <b>cerrar</b> el proceso que se encuentra abierto.</p>
+
+            </div>
+    </div>
+
+
+  <div class="modal-footer">
+
+     <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+  </div>
+
+</div>
+{%else %}
+
+
+
+    <div class="panel-body">
+    <div class="modal-wrapper">
+
+		<div class="col-md-12">
+                	<div  class="form-group">
+              <label >Descripción Periodo </label>
+
+					{{form.descripcion_validacion}}
+
+                    </div>
+
+
+					<div  class="form-group">
+              <label >Fecha Término </label>
+				<div class="input-group">
+				<span class="input-group-addon">
+					<i class="fa fa-calendar"></i>
+				</span>
+					{{form.fecha_termino}}
+				</div>
+                    </div>
+            	<div  class="form-group">
+              <label >Periodo Seguimiento  </label>
+
+
+					{{form.id_periodo_seguimiento}}
+
+                    </div>
+
+<br>
+
+ <div class="modal-text">
+
+                <h4 style="color:red;">¡Atención!</h4>
+                <p style="color:red;">¿Está seguro que desea abrir un nuevo periodo de validación? </p>
+
+  </div>
+    </div>
+</div>
+
+
+
+        </div>
+  <div class="modal-footer">
+           <div id="enviar" style="display:none; text-align:left; " class="alert alert-info" role="alert">
+            Enviando correos, favor espere...
+            </div>
+
+
+      								<div class="alert alert-danger" style="display:none;" id="mjeError">
+									<p id="textError"></p>
+								</div>
+
+     <button class="btn btn-danger" type="submit" id="confirmar"  >Abrir Periodo Validación</button>
+     <button class="btn btn-default" type="button" id="cancelar"  data-dismiss="modal">Cerrar</button>
+  </div>
+
+
+
+
+{%endif %}
+
+</form>
+
+
+<script>
+
+
+
+ $('#confirmar').click(function() {
+    var fecha_actual= moment();
+    var fecha_termino='';
+   var fecha_termino= $('#id_fecha_termino').val()
+
+
+
+    if (moment(fecha_termino).isSameOrBefore(fecha_actual)) {
+
+
+            $("#mjeError").css("display","block");
+            $("#textError").text("La Fecha de Término del Periodo de Validación debe ser mayor a la fecha actual.");
+            return false
+
+
+    }
+
+
+
+    if ($('#id_descripcion_validacion').val() != "" && $('#id_id_periodo_seguimiento').val() != "" && $('#id_fecha_termino').val() != ""){
+
+
+
+                $( this ).hide();
+                $( '#cancelar' ).hide();
+                 $( '#enviar' ).fadeIn();
+                 $("#mjeError").css("display","none");
+                $('#id_fecha_termino').prop( "readonly", true );
+                 $('#id_id_periodo_seguimiento').prop( "readonly", true );
+
+            }
+
+
+
+
+ });
+</script>

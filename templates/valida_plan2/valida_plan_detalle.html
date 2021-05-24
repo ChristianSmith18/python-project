@@ -1,0 +1,338 @@
+{% extends 'base/base.html' %}
+{% block title %}
+Objetivos Asociados al Plan
+{% endblock %}
+{% block content %}
+
+{% if messages %}
+		  {% for message in messages %}
+
+			<div style="border-radius:0;" {% if message.tags %} id="danger-alert" class="{{request.session.message_class}} fade show mb-0" role="alert" {% endif %}>
+			  {{ message }}
+			  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			  </button>
+			</div>
+
+		  {% endfor %}
+
+	{% endif %}
+
+
+
+	<section class="panel">
+							<header class="panel-heading">
+								<div class="panel-actions">
+
+
+							    <button type="button" class="volver btn btn-sm btn-info"  name="button" title="Volver" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top" >
+      								<span class="fa fa-reply"></span></button>
+									</div>
+<!--
+									{% for nivel_usuario in nivel_usuario|slice:":1" %}
+									<h2 class="panel-title">  Listado Objetivos - {{ nivel_usuario.descripcion_nivel }} </h2>
+									{% endfor %} -->
+
+								<h2 class="panel-title">{{ objetivo.descripcion_nivel }} </h2>
+							</header>
+
+		<div class="panel-body">
+								<table class="table table-bordered table-striped mb-none" id="datatable-default">
+									<thead>
+										<tr>
+
+                                          {% if orden.orden_nivel == 2 %}
+
+     											<th>Objetivo Táctico Segundo Nivel</th>
+												<th title="Total Observaciones Asociadas al Conjunto de Actividades (objetivo)" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Objetivos</th>
+												<th title="Total Observaciones Asociadas a la Actividad" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Actividades</th>
+												 <th title="Total Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Act.</th>
+                                                   <th title="Detalle de Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Actividades</th>
+												<th title="Observaciones Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Observaciones</th>
+
+                                          {% endif %}
+
+                                          {% if orden.orden_nivel == 3 %}
+
+     											<th>Objetivo Táctico Tercer Nivel</th>
+												<th title="Total Observaciones Asociadas al Conjunto de Actividades (objetivo)" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Objetivos</th>
+												<th title="Total Observaciones Asociadas a la Actividad" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Actividades</th>
+												 <th title="Total Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Act.</th>
+                                                   <th title="Detalle de Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Actividades</th>
+												<th title="Observaciones Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Observaciones</th>
+
+                                          {% endif %}
+
+                                          {% if orden.orden_nivel == 4 %}
+
+     											<th>Objetivo Operativo</th>
+												<th title="Total Observaciones Asociadas al Conjunto de Actividades (objetivo)" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Objetivos</th>
+												<th title="Total Observaciones Asociadas a la Actividad" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs. Actividades</th>
+												 <th title="Total Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Act.</th>
+                                                   <th title="Detalle de Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Actividades</th>
+												<th title="Observaciones Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Observaciones</th>
+
+
+                                          {% endif %}
+
+										</tr>
+									</thead>
+									<tbody>
+
+                                      {% if orden.orden_nivel == 3 %}
+                                                {% for objetivos in niveles %}
+													<tr>
+
+                                                        <td> {{ objetivos.descripcion_objetivo}}</td>
+															<td> {% if objetivos.count_observaciones_general == none %} 0 {% else %} {{ objetivos.count_observaciones_general}} {%endif%}</td>
+														<td> {% if objetivos.count_observaciones == none %} 0 {% else %} {{ objetivos.count_observaciones}} {%endif%}</td>
+															<td>{% if objetivos.count_actividad == None %}0{% else %}{{ objetivos.count_actividad }}{%endif%} </td>
+                                                        <td style="width:60px; text-align:center;">
+
+
+															<a type="button" title="Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom" id="notification" class="objetivos btn btn-sm btn-success"  href="{% url 'Actividades2'  objetivos.id %} ">
+															<span class="fa fa-bars" ></span>
+															   {% if objetivos.count_no_vistos != 0 and objetivos.count_no_vistos != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos }}</span> {% endif %}
+
+															</a>
+
+                                                    </td>
+																<td style="width:40px; text-align:center;">
+
+															<button type="button"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom"   title="Observaciones al Objetivo" id="notification"  class="update btn btn-sm btn-primary"  data-id="{% url 'gestionobservacionvp2' objetivos.id %}"  >
+															<span class="fa fa-comments" ></span>
+																{% if objetivos.count_no_vistos_general != 0 and objetivos.count_no_vistos_general != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos_general }}</span> {% endif %}
+															</button>
+
+                             									</td>
+
+													</tr>
+									            {% endfor %}
+									  {% endif %}
+
+                                      {% if orden.orden_nivel == 2 %}
+                                                {% for objetivos in niveles %}
+													<tr>
+
+                                                        <td> {{ objetivos.descripcion_objetivo}}</td>
+															<td> {% if objetivos.count_observaciones_general == none %} 0 {% else %} {{ objetivos.count_observaciones_general}} {%endif%}</td>
+														<td> {% if objetivos.count_observaciones == none %} 0 {% else %} {{ objetivos.count_observaciones}} {%endif%}</td>
+															<td>{% if objetivos.count_actividad == None %}0{% else %}{{ objetivos.count_actividad }}{%endif%} </td>
+                                                     <td style="width:60px; text-align:center;">
+
+
+                                                 			 <a type="button" title="Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom" id="notification" class="objetivos btn btn-sm btn-success"  href="{% url 'Actividades2'  objetivos.id %} ">
+															<span class="fa fa-bars" ></span>
+															   {% if objetivos.count_no_vistos != 0 and objetivos.count_no_vistos != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos }}</span> {% endif %}
+
+															</a>
+
+                                                    </td>
+																<td style="width:40px; text-align:center;">
+
+															<button type="button"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom"   title="Observaciones al Objetivo" id="notification"  class="update btn btn-sm btn-primary"  data-id="{% url 'gestionobservacionvp2' objetivos.id %}"  >
+															<span class="fa fa-comments" ></span>
+																{% if objetivos.count_no_vistos_general != 0 and objetivos.count_no_vistos_general != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos_general }}</span> {% endif %}
+															</button>
+
+                             									</td>
+
+													</tr>
+									            {% endfor %}
+									  {% endif %}
+
+                                      {% if orden.orden_nivel == 4 %}
+                                                {% for objetivos in niveles %}
+													<tr>
+
+                                                        <td> {{ objetivos.descripcion_objetivo}}</td>
+														<td> {% if objetivos.count_observaciones_general == none %} 0 {% else %} {{ objetivos.count_observaciones_general}} {%endif%}</td>
+														<td> {% if objetivos.count_observaciones == none %} 0 {% else %} {{ objetivos.count_observaciones}} {%endif%}</td>
+															<td>{% if objetivos.count_actividad == None %}0{% else %}{{ objetivos.count_actividad }}{%endif%} </td>
+                                                     <td style="width:60px; text-align:center;">
+
+
+                                                		   <a type="button" title="Actividades Asociadas al Objetivo" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom" id="notification" class="objetivos btn btn-sm btn-success"  href="{% url 'Actividades2'  objetivos.id %} ">
+															<span class="fa fa-bars" ></span>
+															   {% if objetivos.count_no_vistos != 0 and objetivos.count_no_vistos != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos }}</span> {% endif %}
+
+															</a>
+
+                                                    </td>
+																<td style="width:40px; text-align:center;">
+
+															<button type="button"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom"   title="Observaciones al Objetivo" id="notification"  class="update btn btn-sm btn-primary"  data-id="{% url 'gestionobservacionvp2' objetivos.id %}"  >
+															<span class="fa fa-comments" ></span>
+																{% if objetivos.count_no_vistos_general != 0 and objetivos.count_no_vistos_general != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivos.count_no_vistos_general }}</span> {% endif %}
+															</button>
+
+                             									</td>
+
+													</tr>
+									            {% endfor %}
+									  {% endif %}
+
+
+									</tbody>
+								</table>
+
+				<div align="left"  >
+							<h5 style="color:#1e7799;">Total horas disponible área:	<b>{{total_disponible.total_horas}}</b> | Total Horas Disponibles:  <b>{{total_disponible.total_utilizado}}</b> | Total horas y Porcentaje de Carga Programada: <b>{{total_disponible.consumidas}}(<label>{{total_disponible.avance_porcentaje}}%</label>)</b> </h5>
+							</div>
+
+
+							</div>
+						</section>
+
+
+
+
+<!--Cabecera del modal -->
+
+<div class="modal fade"  tabindex="-1" role="dialog" id="modalCreate">
+  <div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" data-backdrop="static"
+  data-keyboard="false" tabindex="-1" role="dialog" id="modalUpdate">
+  <div class="modal-dialog modal-lg" role="document">
+	<div class="modal-content">
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" id="modalDelete">
+  <div class="modal-dialog modal-xs" role="document">
+	<div class="modal-content">
+
+    </div>
+  </div>
+</div>
+<!--Fin cabecera del modal -->
+
+
+
+
+        <div class="modal fade" id="observacion_center" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+				<header class="panel-heading">
+				<div class="panel-actions">
+				<a class="fa fa-times" data-dismiss="modal"></a>
+				</div>
+				<h2 class="panel-title">Detalle Nota</h2>
+			</header>
+
+              <div class="modal-body">
+               	<textarea id="txt_obs_campo_expand" rows="15" cols="80" class="form-control" style="width:100%;resize: none; " maxlength="5000" readonly  ></textarea>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+
+
+	{% block extrajs %}
+
+
+
+
+<script type="text/javascript">
+
+$(function() {
+
+
+function rollDice(){
+   return (Math.floor(Math.random()*9999)+1);
+}
+
+function generateToken(){
+ 	var stringLength = 100;
+	var stringArray = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','!','?'];
+	var rndString = "";
+
+	for (var i = 1; i < stringLength; i++) {
+			var rndNum = Math.ceil(Math.random() * stringArray.length) - 1;
+			rndString = rndString + stringArray[rndNum];
+		};
+	return rndString
+}
+
+
+    $( ".objetivos" ).each(function( index ) {
+      var url = $(this).attr('href'); //get current url
+      url = url.replace(/ /g, "")
+
+      var encodedUrl = encodeURIComponent(url);
+      var number = rollDice();
+      var tokenstr = generateToken();
+      encodedUrl = encodedUrl + number + tokenstr
+
+      $(this).attr("href", encodedUrl);
+    });
+
+});
+
+$(".volver").click(function() {
+    window.location.href = '{% url 'UnidadesList2'  %}';
+    return false;
+});
+
+	// JS modal crea Registro
+  	 $(".create").modalForm(  {formURL: "{% url 'ActividadesCrear' %}", modalID: $("#modalCreate")});
+
+    // JS modal crear Registro
+    // $(".create").each(function () {
+    // $(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalCreate")});
+	//});
+
+   	 // JS modal actualiza Registro
+   $(".update").each(function () {
+   $(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalUpdate")});
+
+    });
+
+
+    // JS modal elimina Registro
+    $(".delete").each(function () {
+    $(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalDelete")});
+	});
+
+
+     // Js Muestra/Oculta Mensaje Success
+   	 $(".alert").fadeTo(8000, 500).slideUp( "slow", function() {
+     $(this).remove();
+  });
+
+
+
+$('#datatable-default').on('click', '.descripcion_actividad', function () {
+
+    $('#txt_obs_campo_expand').val($(this).parents('tr').find('td:nth-child(1)').text())
+    $('#observacion_center').modal('toggle');
+});
+
+$('#datatable-default').DataTable({
+"ordering": false //desactiva el ordenamiento de la tabla para que el order_by del queryset funcione. ("order": [[ 3, "desc" ]]) para ordenar desde jquery.
+});
+
+</script>
+
+		{% endblock %}
+
+
+
+{% endblock %}

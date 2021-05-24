@@ -1,0 +1,219 @@
+{% extends 'base/base.html' %}
+{% block title %}
+Listado de Planes
+{% endblock %}
+
+{% block content %}
+
+{% if messages %} {% for message in messages %}
+
+	<div style="border-radius:0;" {% if message.tags %} id="danger-alert" class="{{request.session.message_class}} fade show mb-0" role="alert" {% endif %}>
+		{{ message }}
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		</button>
+	</div>
+
+{% endfor %} {% endif %}
+{% if error.id == 1 %}
+
+    <div class="alert alert-warning" id="success-warning" role="alert">
+        <b>Estimado Usuario:</b> Su perfil no posee atriburos para ingresar a esta opción, comuníquese con el administrador.
+    </div>
+
+{% else %}
+{% if estado_seguimiento == 0 %}
+
+{% else %}
+<section class="panel">
+    <header class="panel-heading" style="height:50px;">
+
+        <div class="panel-actions" >
+
+
+        {% if periodo_validacion.estado == 1 %}
+
+
+        <div style=" text-align:right; display:inline; background:green; padding-top:5px; padding-bottom:5px; padding-left:5px; padding-right:5px;  margin-top:-3px;  margin-right:3px; border-radius:3px;  vertical-align: middle; font-size:15px; color:white;"  title="" data-toggle="tooltip" data-original-title="Estado Actual del Periodo de Validación" data-placement="top"> Abierto</div>
+
+             {% elif  periodo_validacion.estado == None or periodo_validacion.estado == 0 or periodo_validacion.estado == 2 %}
+
+
+
+                 <div style=" text-align:right; display:inline; background:red; padding-top:5px; padding-bottom:5px; padding-left:5px; padding-right:5px;  margin-top:-3px;  margin-right:3px; border-radius:3px;  vertical-align: middle; font-size:15px; color:white;"  title="" data-toggle="tooltip" data-original-title="Estado Actual del Periodo de Validación" data-placement="top"> Cerrado </div>
+
+            {% endif %}
+
+
+
+
+            <a  type="button" style="width:30px; height:30px; "  class="create btn btn-sm btn-success"  name="button" title="Descargar Planes Validados en MS Excel" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top" href="{% url 'exporta_plan_valida_seguimiento_xls' jefatura_primerarevision.id %}">
+									 <span style="margin-left:-1px; " class="fa fa-file-excel-o"></span></a>
+            <!--<a href="#" class="fa fa-times"></a>-->
+        </div>
+
+
+
+
+    </header>
+    <div class="panel-body">
+        <table class="table table-bordered table-striped mb-none" id="datatable-default">
+            <thead>
+                <tr>
+
+                    <th>Unidad</th>
+                    <th>Jefatura Reporta</th>
+                    <th>Estado Seguimiento</th>
+                    <th>Fecha Envío Plan</th>
+                    <th >Objetivos</th>
+
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for planes in object_list %}
+                <tr>
+
+                    <td> {{ planes.id_jefatura.id_nivel }} </td>
+                    <td> {{ planes.id_jefatura.id_user }} </td>
+                    <td> {{ planes.id_estado_plan.descripcion_estado}}</td>
+                    <td> {{ planes.fecha_ultima_modificacion}}</td>
+                      <td style="text-align:center;">
+
+                             		<a type="button" title="Objetivos Asociados al Plan" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom"  id="notification" class="objetivos btn btn-sm btn-success"  href="{% url 'ActividadesDetallesValida'  planes.id %} ">
+			<span class="fa fa-bars" ></span>
+			{% if planes.count_no_vistos != 0 and planes.count_no_vistos != none %} <span class="badge" title="Nuevas Observaciones" >{{ planes.count_no_vistos }}</span> {% endif %}
+			</a>
+
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!--Cabecera del modal -->
+<div class="modal fade" tabindex="-1" role="dialog" id="modalCreate">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modalDetalle">
+    <div class="modal-dialog modal-xs" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" id="modalUpdate">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modalDelete">
+    <div class="modal-dialog modal-xs" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modalRechazar">
+    <div class="modal-dialog modal-xs" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="modalAceptar">
+    <div class="modal-dialog modal-xs" role="document">
+        <div class="modal-content">
+
+        </div>
+    </div>
+</div>
+
+<!--Fin cabecera del modal -->
+
+{% block extrajs %}
+
+<script type="text/javascript">
+$(function() {
+
+
+function rollDice(){
+   return (Math.floor(Math.random()*9999)+1);
+}
+
+function generateToken(){
+ 	var stringLength = 100;
+	var stringArray = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','!','?'];
+	var rndString = "";
+
+	for (var i = 1; i < stringLength; i++) {
+			var rndNum = Math.ceil(Math.random() * stringArray.length) - 1;
+			rndString = rndString + stringArray[rndNum];
+		};
+	return rndString
+}
+
+
+    $( ".objetivos" ).each(function( index ) {
+      var url = $(this).attr('href'); //get current url
+      url = url.replace(/ /g, "")
+
+      var encodedUrl = encodeURIComponent(url);
+      var number = rollDice();
+      var tokenstr = generateToken();
+      encodedUrl = encodedUrl + number + tokenstr
+
+      $(this).attr("href", encodedUrl);
+    });
+
+});
+
+    $(".rechazar").each(function() {
+        $(this).modalForm({
+            formURL: $(this).data('id'),
+            modalID: $("#modalRechazar")
+        });
+    })
+
+    $(".aceptar").each(function() {
+        $(this).modalForm({
+            formURL: $(this).data('id'),
+            modalID: $("#modalAceptar")
+        });
+    })
+</script>
+
+<script type="text/javascript">
+
+
+    // Js Muestra/Oculta Mensaje Success
+    $(".alert").fadeTo(8000, 700).slideUp("slow", function() {
+        $(this).remove();
+    });
+
+    $('#datatable-default').DataTable({
+        "ordering": true //desactiva el ordenamiento de la tabla para que el order_by del queryset funcione. ("order": [[ 3, "desc" ]]) para ordenar desde jquery.
+    });
+
+
+
+</script>
+
+{% endblock %}
+
+{% endif %}
+{%endif %}{% endblock %}

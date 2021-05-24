@@ -1,0 +1,179 @@
+{% extends 'base/base.html' %}
+{% block title %}
+Actividades Asociadas al Objetivo
+{% endblock %}
+{% block content %}
+
+	{% if messages %}
+	  {% for message in messages %}
+		<div style="border-radius:0;" {% if message.tags %} id="danger-alert" class="{{request.session.message_class}} fade show mb-0" role="alert" {% endif %}>
+		  {{ message }}
+	  		<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			 </button>
+		</div>
+	 {% endfor %}
+	{% endif %}
+
+	<section class="panel">
+		<header class="panel-heading">
+			<div class="panel-actions">
+							    <button type="button" class="volver btn btn-sm btn-info"   name="button" title="Volver" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top" >
+      								<span class="fa fa-reply"></span></button>
+
+			</div>
+
+		<h2 class="panel-title" style="font-size:16px; padding-right:28px;">{{ nombre_objetivo.nombre }}</h2>
+		</header>
+
+		<div class="panel-body">
+			<table class="table table-bordered table-striped mb-none" id="datatable-default">
+				<thead>
+					<tr>
+						<!--<th>id</th>-->
+						<th>N°</th>
+						<th>Actividad</th>
+
+						<th >Fecha Inicio</th>
+						<th >Fecha Término</th>
+
+                        <th title="Total de Observaciones Asociadas a la Actividad" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">Total Obs.</th>
+						<th>Opciones</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					{%  for objetivo in object_list %}
+					<tr>
+						<td> {{ forloop.counter }}</td>
+						<td class="MitextoGrande"  style="height:65px; width:100%; border-bottom:1px; border-left:0px; border-right:0px;  padding-top:-5px;" >{{ objetivo.descripcion_actividad }}</td>
+
+
+						<td style="width:170px;">{{ objetivo.fecha_inicio_actividad }}</td>
+						<td style="width:170px;">{{ objetivo.fecha_termino_actividad }}</td>
+
+
+                        <td>{% if objetivo.count_observaciones == None %}0{% else %}{{ objetivo.count_observaciones }}{%endif%} </td>
+						<td style="width:80px; text-align:center;">
+
+
+
+                            <button type="button"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="bottom"   title="Observaciones a la Actividad" id="notification"  class="update btn btn-sm btn-primary"  data-id="{% url 'gestionobservacionver' objetivo.id %}"  >
+							<span class="fa fa-comments" ></span>
+								{% if objetivo.count_no_vistos != 0 and objetivo.count_no_vistos != none %} <span class="badge" title="Nuevas Observaciones"  data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">{{ objetivo.count_no_vistos }}</span> {% endif %}
+							</button>
+
+							 <button type="button"  title="Detalle Actividad" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top"  class="update btn btn-sm btn-warning"  data-id="{% url 'detalleactividadesValidaPlan2' objetivo.id %}"  >
+							<span class="fa fa-search" ></span>
+
+							</button>
+
+
+
+                             </td>
+
+
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<!--Cabecera del modal -->
+	<div class="modal fade" tabindex="-1" role="dialog" id="modalCreate">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" tabindex="-1" role="dialog" id="modalUpdate">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" tabindex="-1" role="dialog" id="modalDelete">
+		<div class="modal-dialog modal-xs" role="document">
+			<div class="modal-content">
+
+			</div>
+		</div>
+	</div>
+	<!--Fin cabecera del modal -->
+
+        <div class="modal fade" id="observacion_center" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+				<header class="panel-heading">
+				<div class="panel-actions">
+				<a class="fa fa-times" data-dismiss="modal"></a>
+				</div>
+				<h2 class="panel-title">Detalle Actividad</h2>
+			</header>
+
+              <div class="modal-body">
+               	<textarea id="txt_obs_campo_expand" rows="15" cols="80" class="form-control" style="width:100%;resize: none; " maxlength="5000" readonly  ></textarea>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+
+	{% block extrajs %}
+		<script type="text/javascript">
+
+
+			$(".volver").click(function() {
+				//window.location.href = '{% url 'ActividadesDetalles2' id_nivel_controlador.id  %}';
+
+				var url = '{% url 'ActividadesDetalles2' id_nivel_controlador.id %}';
+     			 var encodedUrl = encodeURIComponent(url);
+   				 window.location.href = encodedUrl
+				return false;
+			});
+
+			// JS modal actualiza Registro
+			$(".update").each(function () {
+				$(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalUpdate")});
+			});
+
+			// JS modal elimina Registro
+			$(".delete").each(function () {
+				$(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalDelete")});
+			});
+
+			// Js Muestra/Oculta Mensaje Success
+			$(".alert").fadeTo(4000, 500).slideUp( "slow", function() {
+				$(this).remove();
+			});
+
+$('#datatable-default').on('click', '.MitextoGrande', function () {
+    $('#txt_obs_campo_expand').val($(this).parents('tr').find('td:nth-child(2)').text())
+    $('#observacion_center').modal('toggle');
+
+
+});
+
+
+$('#datatable-default').DataTable({
+stateSave: true,
+"ordering": false, //desactiva el ordenamiento de la tabla para que el order_by del queryset funcione. ("order": [[ 3, "desc" ]]) para ordenar desde jquery.
+"pageLength": 50 // cambio a 50 sprint 1 - CI-11 - 070121
+});
+
+		</script>
+	{% endblock %}
+
+{% endblock %}

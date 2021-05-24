@@ -1,0 +1,1017 @@
+{% extends 'base/base.html' %}
+
+{% load sitetree %}
+{% load mathfilters %}
+{% block title %}
+Reportes
+{% endblock %}
+
+{% block extrajs %}
+
+
+		<script type="text/javascript">
+
+$( document ).ready(function() {
+unidad_filtro=$('#unidad_filtro').val();
+mes_filtro=$('#mes_filtro').val();
+
+
+$('#list_seleccion_unidad').val(unidad_filtro);
+$('#list_seleccion_unidad').change();
+
+$('#mes_filtro_id').val(mes_filtro);
+$('#mes_filtro_id').change();
+
+//alert('document ready');
+$('#pestana_1').css('display','block');
+$('#pestana_2').css('display','block');
+$('#pestana_3').css('display','block');
+$('#pestana_4').css('display','block');
+
+$('#mensaje').css('display','block');
+
+
+
+
+
+
+
+
+$('#Tabla').DataTable();
+
+$('#Tabla_filter').find("input").css('display','none');  /// desaparezco el input de busqueda
+//$('#Tabla_filter').find("input").val($('').val())
+//$('#Tabla_filter').find("input").val($('#list_estados').val()) // asigno al input de busqueda el primer valor del select
+//$('#Tabla_filter').find("input").trigger('keyup');
+Calcular();
+
+
+
+
+
+/////////////////////////////////////////////////1111////////////////////////////////////////////////////////////////////
+
+var des=10;
+
+var ctx1 = $('#chart_uno');
+
+var myLineChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        datasets: [{
+         label: "N° de Actividades Planificadas (Acumuladas)",
+
+         data:  {{ ValMesesAcum }},
+
+         borderColor: ['rgba(54, 162, 235, 1)'],
+		 backgroundColor: ['rgba(240, 240, 240, 0)'],
+		 pointBackgroundColor: "rgba(54, 162, 235, 1)",
+		 pointBorderColor: "rgba(54, 162, 235, 1)",
+		 pointHoverBackgroundColor:"rgba(52,108,176,1)",
+		 pointHoverBorderColor: "rgba(52,108,176,1)",
+   		 pointHoverBorderWidth: 2,
+   		 pointHoverRadius:6,
+		 borderWidth: 2,
+		 pointBorderWidth:1,
+		 pointRadius: 4
+
+		},{
+
+		 label: "N° de Actividades Ejecutadas (Acumuladas) " ,
+
+         data: {{ ValMesesAcumEjec }},
+
+         borderColor: ['rgba(255, 104, 136, 1)'],
+		 backgroundColor: ['rgba(240, 240, 240, 0)'],
+		 pointBackgroundColor: "rgba(255,104,136,1)",
+		 pointBorderColor: "rgba(255,104,136,1)",
+		 pointHoverBackgroundColor:"rgba(255,45,87,1)",
+		 pointHoverBorderColor: "rgba(255,45,87,1)",
+   		 pointHoverBorderWidth: 2,
+   		 pointHoverRadius:6,
+		 borderWidth: 2,
+		 pointBorderWidth:1,
+		 pointRadius: 4
+
+		},{
+
+         label: "Desviación Mes Anteior: {{ ValDesviacion_mes_anterior }}% " ,
+
+         data: [],
+          borderColor: ['rgba(112, 173, 71, 1)'],
+          backgroundColor: ['rgba(112, 173, 71, 1)'],
+          fontStyle:'bold',
+
+
+
+        },{
+
+
+
+           label: "Desviación: {{ ValDesviacion }}% " ,
+
+         data: [],
+          borderColor: ['rgba(237, 125, 49, 1)'],
+          backgroundColor: ['rgba(237, 125, 49, 1)'],
+          fontStyle:'bold',
+
+
+        }]
+     },
+    options: {
+			 title: {
+					display: true,
+					text: 'Curva de ejecución actividades programadas (acumulada)'
+				},
+	           legend: {
+           		 display: true,
+
+
+         		},
+
+
+			 plugins: {
+			  datalabels: {
+				anchor: 'end',
+				align: 'top',
+				formatter: Math.round,
+				color: '#a7a7a7',
+				font: {
+				  size: '10'
+
+				}
+			  }
+			},
+
+
+			   scales: {
+				yAxes: [{
+					ticks: {
+
+						// suggestedMin: 10,
+						 //suggestedMax:50,
+						 beginAtZero: true,
+						 stepSize: 5,
+
+
+					}
+				}]
+     		   },
+
+
+    },
+
+
+
+});
+
+
+$("#download").click(function(){
+  /*Get image of canvas element*/
+  var url_base64jp = document.getElementById("chart_uno").toDataURL("image/jpg");
+  /*get download button (tag: <a></a>) */
+  var a =  document.getElementById("download");
+  /*insert chart image url to download button (tag: <a></a>) */
+  a.href = url_base64jp;
+});
+
+
+	$("#downloadTable").click(function(){
+
+
+  $("#Tabla").table2excel({
+    // exclude CSS class
+    exclude:".noExl",
+    name:"Worksheet Name",
+    filename:"EstadoCumplimiento",//do not include extension
+    fileext:".xls" // file extension
+  });
+});
+
+
+       // Js Muestra/Oculta Mensaje Success
+   	 $(".alert, #success-alert-warning").fadeTo(100000, 700).slideUp( "slow", function() {
+     $(this).remove();
+  });
+
+   	 // JS modal actualiza Registro
+   $(".update").each(function () {
+   $(this).modalForm({formURL: $(this).data('id'),  modalID: $("#modalUpdate")});
+
+    });
+
+         // Js Muestra/Oculta Mensaje Success
+   	 $(".alert").fadeTo(2000, 500).slideUp( "slow", function() {
+     $(this).remove();
+  });
+
+});
+
+
+$('#datatable-default').on('click', '.descripcion_actividad', function () {
+    $('#txt_obs_campo_expand').val($(this).parents('tr').find('td:nth-child(2)').text())
+    $('#observacion_center').modal('toggle');
+});
+
+$('#datatable-default').on('click', '.descripcion_objetivo', function () {
+    $('#txt_obs_campo_expand').val($(this).parents('tr').find('td:nth-child(3)').text())
+    $('#observacion_center').modal('toggle');
+});
+
+$('#datatable-default').on('click', '.descripcion_justificacion', function () {
+    $('#txt_obs_campo_expand').val($(this).parents('tr').find('td:nth-child(17)').text())
+    $('#observacion_center').modal('toggle');
+});
+
+
+
+    $("#list_estados2").change(function () {
+   //$('#Tabla_filter').find("input").val($(this).val())
+   // $('#Tabla_filter').find("input").trigger('keyup');
+    Calcular();
+       });
+
+	function Calcular() {
+
+		var sum1 = 0;
+		$(".countTotal").each(function(){
+		sum1 += parseInt($(this).html()) || 0;
+		$('.totalCountVal').text(sum1.toFixed(0));
+		});
+
+
+		var sum2 = 0;
+		$(".CountEliminadas").each(function(){
+		sum2 += parseInt($(this).html()) || 0;
+		$('.CountEliminadasVal').text(sum2.toFixed(0));
+		$('.CountEliminadasValPer').text(((sum2*100)/sum1).toFixed(2));
+		});
+
+		var sum3 = 0;
+		$(".CountSinMovimiento").each(function(){
+		sum3 += parseInt($(this).html()) || 0;
+		$('.CountSinMovimientoVal').text(sum3.toFixed(0));
+		$('.CountSinMovimientoValPer').text(((sum3*100)/sum1).toFixed(2));
+		});
+
+		var sum4 = 0;
+		$(".CountConRetraso").each(function(){
+		sum4 += parseInt($(this).html()) || 0;
+		$('.CountConRetrasoVal').text(sum4.toFixed(0));
+		$('.CountConRetrasoValPer').text(((sum4*100)/sum1).toFixed(2));
+		});
+
+		var sum5 = 0;
+		$(".CountFinalizadas").each(function(){
+		sum5 += parseInt($(this).html()) || 0;
+		$('.CountFinalizadasVal').text(sum5.toFixed(0));
+		$('.CountFinalizadasValPer').text(((sum5*100)/sum1).toFixed(2));
+		});
+
+		var sum6 = 0;
+		$(".CountNoIniciadas").each(function(){
+		sum6 += parseInt($(this).html()) || 0;
+		$('.CountNoIniciadasVal').text(sum6.toFixed(0));
+		$('.CountNoIniciadasValPer').text(((sum6*100)/sum1).toFixed(2));
+		});
+
+		var sum7 = 0;
+		$(".CountEnCurso").each(function(){
+		sum7 += parseInt($(this).html()) || 0;
+		$('.CountEnCursoVal').text(sum7.toFixed(0));
+		$('.CountEnCursoValPer').text(((sum7*100)/sum1).toFixed(2));
+		});
+
+
+
+ 	}
+
+  $("#Tabla").dataTable({
+        "processing": true,
+        "stateSave": true,
+		paging: false,
+        destroy: true,
+
+
+        "language": {
+            "lengthMenu": " _MENU_ registros por página",
+            "zeroRecords": "No se encontraron resultados",
+
+            "info": "",
+            "infoEmpty": "No hay registros disponibles",
+            "infoFiltered": "",
+            "paginate": {
+                "previous": "Anterior",
+                "next": "Siguiente"
+            },
+            "search": ""
+        },
+
+
+    });
+
+
+
+		</script>
+
+<script type="text/javascript">
+
+
+//$(document).on('submit','#formulario', function(e){
+//e.preventDefault();
+
+
+//		$.ajax({
+//		cache: false,
+//		type:'POST',
+
+//		url:'{% url "ReportCurvaEjecucion"  %}',
+//		data:{
+//		unidad_filtro:$('#list_seleccion_unidad').val(),
+//		mes_filtro:$('#mes_filtro_id').val(),
+//		csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+
+
+	//	},
+	//	success:function(){
+//alert('ok');
+//$('#list_seleccion_unidad').val(unidad_filtro);
+//$('#list_seleccion_unidad').change();
+
+	//	}
+
+	//	});
+
+
+//});
+		</script>
+	{% endblock %}
+
+
+{% block content %}
+
+{% if messages %}
+		  {% for message in messages %}
+
+			<div style="border-radius:0;" {% if message.tags %} id="danger-alert" class="{{request.session.message_class}} fade show mb-0" role="alert" {% endif %}>
+			  {{ message }}
+			  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			  </button>
+			</div>
+
+		  {% endfor %}
+
+	{% endif %}
+
+
+
+<div class="tabs tabs-primary">
+								<ul class="nav nav-tabs">
+
+										<li class="active">
+										<a aria-expanded="false" href="#SeleccionUnidad" data-toggle="tab"> Seleccione Unidad</a>
+									</li>
+
+
+
+									<li >
+										<a aria-expanded="true" id="pestana_1" style="display:none;" href="#popular1" data-toggle="tab"> Gráfico C.E.A.P</a>
+									</li>
+									<li >
+										<a aria-expanded="true" id="pestana_2"  style="display:none;"   href="#recent1" data-toggle="tab">Datos C.E.A.P</a>
+									</li>
+									<li>
+										<a aria-expanded="true" id="pestana_3"  style="display:none;"   href="#cumplimiento1" data-toggle="tab">Estado Cumplimiento</a>
+									</li>
+									<li>
+										<a aria-expanded="true" id="pestana_4"  style="display:none;"   href="#distribucion_cargos" data-toggle="tab">Distribución por Cargos</a>
+									</li>
+
+								</ul>
+
+
+
+								<div class="tab-content">
+
+
+<!--#############################################################################################################3-->
+
+
+									<div class="tab-pane active" id="SeleccionUnidad">
+
+
+{% if lista_datos_unidades %}
+
+
+
+									<section class="panel">
+											<div class="form-group">
+
+
+									<form id="formulario"  method="post" >
+
+									<div class="panel-body">
+										{% csrf_token %}
+
+										<div class="col-md-4" style="width:400px;" ><label style="margin-left:-15px;">Seleccione Unidad Nivel Superior</label>
+								<select class="form-control" name="unidad_filtro" id="list_seleccion_unidad" style=" margin-left:-15px; width:400px;">
+
+  							{% for actividad_count in lista_datos_unidades %}
+                           	  <option  value=		{% if actividad_count.id_controlador__nivel_inicial == 4 %}4_{{actividad_count.id_controlador__id_jefatura__id_nivel__id_cuarto_nivel__tercer_nivel__segundo_nivel__id}}{% endif %}
+														{% if actividad_count.id_controlador__nivel_inicial == 3 %} 3_{{actividad_count.id_controlador__id_jefatura__id_nivel__id_tercer_nivel__segundo_nivel__id}}{% endif %}
+														{% if actividad_count.id_controlador__nivel_inicial == 2 %} 2_{{actividad_count.id_controlador__id_jefatura__id_nivel__id_segundo_nivel__primer_nivel__id}}{% endif %}>
+
+
+	                                        	{% if actividad_count.id_controlador__nivel_inicial == 4 %}{{ actividad_count.id_controlador__id_jefatura__id_nivel__id_cuarto_nivel__tercer_nivel__segundo_nivel__descripcion_nivel }} {% endif %}
+														{% if actividad_count.id_controlador__nivel_inicial == 3 %} {{ actividad_count.id_controlador__id_jefatura__id_nivel__id_tercer_nivel__segundo_nivel__descripcion_nivel }} {% endif %}
+														{% if actividad_count.id_controlador__nivel_inicial == 2 %} {{ actividad_count.id_controlador__id_jefatura__id_nivel__id_segundo_nivel__primer_nivel__descripcion_nivel }} {% endif %}
+
+
+
+
+								 {% endfor %}
+								 </option>
+
+                            	</select>
+</div>
+										<div class="col-md-4"  style="width:150px;" >
+
+										<label>Seleccione Mes</label>
+
+								<select class="form-control" id="mes_filtro_id" name="mes_filtro" style="width:150px;"  >
+
+							  {% for meses in meses_periodo %}
+                             <option value= {{meses.month}}>
+
+
+	                            {% if meses.month == 1 %}Enero{%endif%}
+								 {% if meses.month == 2 %}Febrero{%endif%}
+								 {% if meses.month == 3 %}Marzo{%endif%}
+								 {% if meses.month == 4 %}Abril{%endif%}
+								 {% if meses.month == 5 %}Mayo{%endif%}
+								 {% if meses.month == 6 %}Junio{%endif%}
+								 {% if meses.month == 7 %}Julio{%endif%}
+								 {% if meses.month == 8 %}Agosto{%endif%}
+								 {% if meses.month == 9 %}Septiembre{%endif%}
+								 {% if meses.month == 10 %}Octubre{%endif%}
+								 {% if meses.month == 11 %}Noviembre{%endif%}
+								 {% if meses.month == 12 %}Diciembre{%endif%}
+
+
+
+
+								 {% endfor %}
+							 </option>
+
+
+
+                            </select>
+</div><div class="col-md-4" style="text-align:left; margin-left:15px; margin-top:26px; " >
+
+										<button class="btn btn-primary" type="submit" id="generar_report">Generar Reporte</button></div>
+
+										<input style="display:none;" id="unidad_filtro" type="text" value="{{unidad_filtro}}">
+										<input style="display:none;"  id="mes_filtro" type="text" value="{{mes_filtro}}">
+
+
+
+
+									</div>
+									</form>
+												</div>
+<div  id="mensaje" style="margin-left:15px; color:green; display:none;">Reporte Generado Correctamente para:
+
+
+			{% if nivel == '2' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							 <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}</b> | Mes: <b>{{mes_seleccionado}}</b>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '3' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<b>{{unidads.id_controlador.id_jefatura.id_nivel.id_tercer_nivel.segundo_nivel}}</b> | Mes: <b>{{mes_seleccionado}}</b>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '4' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<b>{{unidads.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}</b> | Mes: <b>{{mes_seleccionado}}</b>
+							{% endfor %}
+
+
+							{% endif %}
+
+
+
+</div>
+
+
+
+									</section>
+
+
+{% else %}
+
+<div class="alert alert-warning" id="success-warning" role="alert">
+    <b>Estimado Usuario:</b> No se ha detectado periodo de seguimiento cerrado para desplegar su información.
+</div>
+
+{% endif %}
+
+
+			</div>
+
+
+<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
+
+
+
+
+<!--#############################################################################################################3-->
+									<div class="tab-pane"  id="popular1">
+
+										<section class="panel">
+
+						<header class="panel-heading">
+								<div class="panel-actions">
+									<div style="text-align:right;">
+											<a id="download" style="width:30px; height:30px;"  name="download"  download="Curva_de_ejecucion_actividades_programadas.jpg" href="" class="btn btn-sm btn-success" title="Descargar Gráfico" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">
+											<span style="margin-left:-2px;" class="fa fa-download"></span>
+											</a>
+									</div>
+
+								</div>
+
+
+							{% if nivel == '2' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '3' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_tercer_nivel.segundo_nivel}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '4' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}</b> </span>
+							{% endfor %}
+
+							{% endif %}
+
+
+
+						</header>
+
+
+
+									<div class="panel-body">
+
+
+
+										<canvas id="chart_uno" ></canvas>
+
+									</div>
+
+									</section>
+
+								</div>
+
+
+<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
+
+
+									<div class="tab-pane" id="recent1">
+
+
+
+										<section class="panel">
+
+																	<header class="panel-heading">
+								<div class="panel-actions">
+							<div style="text-align:right;">
+								 <a  type="button" style="width:30px; height:30px; "  class="create btn btn-sm btn-success" href="{% url 'export_xls' %}"  name="button" title="Descargar Tabla en MS Excel" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">
+									 <span style="margin-left:-1px; " class="fa fa-file-excel-o"></span></a>
+							</div>
+
+
+								</div>
+
+
+							{% if nivel == '2' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '3' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '4' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+
+							{% endif %}
+
+
+
+						</header>
+
+
+
+
+
+									<!--<a href="#" class="fa fa-times"></a>-->
+
+							<div class="panel-body">
+								<table class="table table-bordered table-striped mb-none" id="datatable-default">
+									<thead>
+										<tr style="font-size:11px;">
+											<th>N°</th>
+											<th>Descripción Actividad</th>
+											<th>Objetivo Vinculado</th>
+											<th>Periodicidad</th>
+											<th>Producto Estadístico</th>
+											<th>Hora x actividad</th>
+											<th>Volumen</th>
+											<th>N° Personas Asignadas</th>
+											<th>Total Horas</th>
+											<th>Cargo</th>
+											<th >Fecha Inicio</th>
+											<th >Fecha Término</th>
+											<th>Estado Actividad.</th>
+											<th>Fecha Real de Finalización</th>
+											<th>Reprogramación Fecha de Inicio</th>
+											<th>Reprogramación Fecha de Término</th>
+											<th>Justificación Desviación</th>
+											<th>Dependencia 1</th>
+											<th>Dependencia 2</th>
+											<th>Área</th>
+											<th>Eje</th>
+
+
+
+										</tr>
+									</thead>
+									<tbody>
+
+                                            {% for actividad in object_list %}
+                                                <tr style="font-size:11px;">
+													<td> {{ forloop.counter }}</td>
+                                                    <td class="descripcion_actividad"  style="cursor:pointer; max-width: 100px; overflow: hidden;  display: table-cell;  text-overflow: ellipsis;  border: solid 1px #dddddd; white-space: nowrap;"> {{ actividad.id_actividad.descripcion_actividad }} </td>
+													 <td class="descripcion_objetivo"  style="cursor:pointer; max-width: 100px; overflow: hidden;  display: table-cell;  text-overflow: ellipsis;  border: solid 1px #dddddd; white-space: nowrap;"> {% if actividad.id_actividad.id_objetivo_operativo != None %} {{actividad.id_actividad.id_objetivo_operativo}} {% elif actividad.id_actividad.id_objetivo_tactico != None %} {{actividad.id_actividad.id_objetivo_tactico}} {% elif actividad.id_actividad.id_objetivo_tacticotn != None %} {{actividad.id_actividad.id_objetivo_tacticotn}} {% endif %} </td>
+													<td> {{ actividad.id_actividad.id_periodicidad}} </td>
+													<td> {{ actividad.id_actividad.id_producto_estadistico}} </td>
+													<td> {{ actividad.id_actividad.horas_actividad}} </td>
+													<td> {{ actividad.id_actividad.volumen}} </td>
+													<td> {{ actividad.id_actividad.personas_asignadas}} </td>
+													<td> {{ actividad.id_actividad.total_horas}} </td>
+													<td> {{ actividad.id_actividad.id_familia_cargo}} </td>
+													<td> {{ actividad.id_actividad.fecha_inicio_actividad}} </td>
+													<td> {{ actividad.id_actividad.fecha_termino_actividad}} </td>
+													<td> {{ actividad.id_estado_actividad}} </td>
+													<td> {% if actividad.fecha_real_termino == None %} {% else %} {{ actividad.fecha_real_termino}} {% endif %} </td>
+													<td> {% if actividad.fecha_reprogramacion_inicio == None %} {% else %} {{ actividad.fecha_reprogramacion_inicio}} {% endif %} </td>
+													<td>{% if actividad.fecha_reprogramacion_termino == None %} {% else %} {{ actividad.fecha_reprogramacion_termino}} {% endif %} </td>
+													<td class="descripcion_justificacion"  style="cursor:pointer; max-width: 100px; overflow: hidden;  display: table-cell;  text-overflow: ellipsis;  border: solid 1px #dddddd; white-space: nowrap;"> {% if actividad.justificacion == None %} {% else %} {{ actividad.justificacion}} {% endif %}  </td>
+													<td>
+														{% if actividad.id_controlador.nivel_inicial == 4 %} {{actividad.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}
+														{% elif actividad.id_controlador.nivel_inicial == 3 %} -
+														{% elif actividad.id_controlador.nivel_inicial == 2 %} -
+														{% endif %}
+													</td>
+													<td>
+														{% if actividad.id_controlador.nivel_inicial == 4 %} {{actividad.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel}}
+														{% elif actividad.id_controlador.nivel_inicial == 3 %} -
+														{% elif actividad.id_controlador.nivel_inicial == 2 %} {{actividad.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}
+														{% endif %}
+													</td>
+
+													<td>
+
+														{% if actividad.id_controlador.nivel_inicial == 4 %} {{actividad.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel}}
+														{% elif actividad.id_controlador.nivel_inicial == 3 %} -
+														{% elif actividad.id_controlador.nivel_inicial == 2 %} {{actividad.id_controlador.id_jefatura.id_nivel.id_segundo_nivel}}
+														{% endif %}
+													</td>
+
+													<td>
+														{% if actividad.id_actividad.id_objetivo_operativo != None %} {{actividad.id_actividad.id_objetivo_operativo.id_objetivo_tacticotn.id_objetivo_tactico.id_objetivo_estrategico.ges_eje}}
+														{% elif actividad.id_actividad.id_objetivo_tacticotn != None %} {{actividad.id_actividad.id_objetivo_tacticotn.id_objetivo_tactico.id_objetivo_estrategico.ges_eje}}
+														{% elif actividad.id_actividad.id_objetivo_tactico != None %} {{actividad.id_actividad.id_objetivo_tactico.id_objetivo_estrategico.ges_eje}}
+														{% endif %}
+													</td>
+
+
+
+                                                </tr>
+                                            {% endfor %}
+
+
+									</tbody>
+								</table>
+
+							</div>
+						</section>
+									</div>
+
+
+<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
+
+
+
+									<div class="tab-pane" id="cumplimiento1">
+										<section class="panel">
+
+																										<header class="panel-heading">
+								<div class="panel-actions">
+								<div style="text-align:right; position:relative; z-index:1;;">
+											<button id="downloadTable" style="width:30px; height:30px;"  name="downloadTable" title="Descargar Tabla en MS Excel" class="btn btn-sm btn-success" data-toggle="tooltip" data-original-title="Tooltip on bottom" data-placement="top">
+											<span style="margin-left:-1px;" class="fa fa-file-excel-o"></span>
+											</button>
+
+
+
+									</div>
+
+
+								</div>
+
+
+							{% if nivel == '2' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '3' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '4' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+
+
+
+						</header>
+
+
+
+
+
+											<div class="panel-body" style="margin-top:-40px;">
+
+							<div class="form-group">
+
+
+
+						    </div>
+
+
+								<table class="table table-bordered table-striped mb-none" id="Tabla"  data-page-length='3000'>
+									<thead>
+										<tr style="font-size:11px;">
+
+											<th colspan="1" style="background-color:#bec1cb; " ></th>
+											<th style="text-align:center; background-color:#1e7799; color:#ffffff;" colspan="2">No Iniciadas</th>
+											<th style="text-align:center; background-color:#70ad47; color:#ffffff;" colspan="2">Finalizadas</th>
+											<th style="text-align:center; background-color:#6783b5; color:#ffffff;" colspan="2">En Curso</th>
+											<th style="text-align:center; background-color:#808080; color:#ffffff;" colspan="2">Con Retraso </th>
+											<th style="text-align:center; background-color:#e6ac00; color:#ffffff;" colspan="2">Sin Movimiento </th>
+											<th style="text-align:center; background-color:#ed7d31; color:#ffffff;" colspan="2">Eliminadas </th>
+											<th  style="text-align:center; background-color:#408080; color:#ffffff;"> Total</th>
+
+										</tr>
+
+											<tr style="font-size:11px;">
+												<th class="noExl" style="display:none;" >Mes</th>
+											<th class="noExl" style="display:none;" >Nivel</th>
+
+											<th>Unidades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>N° Total Actividades</th><th>% Total Actividades</th>
+											<th>Total </th>
+
+										</tr>
+
+									</thead>
+									<tbody >
+
+
+                                            {% for actividad_count in object_count %}
+                                                <tr style="font-size:11px;">
+													<td class="noExl"  style="display:none;" > {{ actividad_count.month}} </td>
+
+													<td class="noExl"  style="display:none;"> {{ actividad_count.id_controlador__nivel_inicial }} </td>
+
+													<td> {{ actividad_count.id_controlador__id_jefatura__id_nivel__descripcion_nivel }} </td>
+													<td><span class="CountNoIniciadas"> {{ actividad_count.CountNoIniciadas }}</span></td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %}</td>
+													<td><span class="CountFinalizadas">{{ actividad_count.CountFinalizadas }}</span> </td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %}</td>
+													<td><span class="CountEnCurso">{{ actividad_count.CountEnCurso }}</span> </td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %} </td>
+													<td><span class="CountConRetraso">{{ actividad_count.CountConRetraso }}</span> </td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %}</td>
+													<td><span class="CountSinMovimiento">{{ actividad_count.CountSinMovimiento }}</span> </td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %} </td>
+													<td><span class="CountEliminadas">{{ actividad_count.CountEliminadas }} </span></td><td>{% if actividad_count.CountTotal == 0 %}0%{% else %}{{ actividad_count.CountNoIniciadas|mul:100 |div:actividad_count.CountTotal|floatformat:2 }}% {% endif %} </td>
+													<td><span class="countTotal">{{ actividad_count.CountTotal }} </span></td>
+
+                                                </tr>
+                                            {% endfor %}
+
+									</tbody>
+
+									<tbody >
+
+
+                                                <tr style="font-size:11px;">
+													<td class="noExl" style="display:none;" >  </td>
+													<td class="noExl"  style="display:none;">  </td>
+
+													<td style="background-color:#bec1cb; font-weight: bold; color:#4f4f4f; width:150px;"> Total General</td>
+													<td style="background-color:#1e7799; font-weight: bold; color:#ffffff;"><span class="CountNoIniciadasVal"></span> </td><td style="background-color:#1e7799; font-weight: bold; color:#ffffff;"> <span class="CountNoIniciadasValPer"></span>%</td>
+													<td style="background-color:#70ad47; font-weight: bold; color:#ffffff;"><span class="CountFinalizadasVal"></span> </td><td style="background-color:#70ad47; font-weight: bold; color:#ffffff;"> <span class="CountFinalizadasValPer"></span>%</td>
+													<td style="background-color:#6783b5; font-weight: bold; color:#ffffff;"><span class="CountEnCursoVal"></span> </td><td style="background-color:#6783b5; font-weight: bold; color:#ffffff;"> <span class="CountEnCursoValPer"></span>%</td>
+													<td style="background-color:#808080; font-weight: bold; color:#ffffff;"><span class="CountConRetrasoVal"></span> </td><td style="background-color:#808080; font-weight: bold; color:#ffffff;"> <span class="CountConRetrasoValPer"></span>%</td>
+													<td style="background-color:#e6ac00; font-weight: bold; color:#ffffff;"><span class="CountSinMovimientoVal"></span> </td><td style="background-color:#e6ac00; font-weight: bold; color:#ffffff;"> <span class="CountSinMovimientoValPer"></span>%</td>
+													<td style="background-color:#ed7d31; font-weight: bold; color:#ffffff;"><span class="CountEliminadasVal"></span></td><td style="background-color:#ed7d31; font-weight: bold; color:#ffffff;"><span class="CountEliminadasValPer"></span>%</td>
+													<td style="background-color:#408080; font-weight: bold; color:#ffffff;" ><span class="totalCountVal"></span></td>
+
+
+
+
+                                                </tr>
+
+
+									</tbody>
+
+
+
+								</table>
+
+
+
+
+							</div>
+
+
+
+										</section>
+									</div>
+
+
+<!--xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
+
+						<div class="tab-pane" id="distribucion_cargos">
+
+
+
+										<section class="panel">
+
+								<header class="panel-heading">
+								<div class="panel-actions">
+
+
+								</div>
+
+
+							{% if nivel == '2' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_segundo_nivel.primer_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '3' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+							{% if nivel == '4' %}
+
+							{% for unidads in unidad|slice:":1"  %}
+							<span class="panel-title" style="font-size:14px;"   >Área Seleccionada: <b>{{unidads.id_controlador.id_jefatura.id_nivel.id_cuarto_nivel.tercer_nivel.segundo_nivel}}</b> | Mes Seleccionado: <b>{{mes_seleccionado}}</b></span>
+							{% endfor %}
+
+							{% endif %}
+
+
+
+						</header>
+
+
+
+									<!--<a href="#" class="fa fa-times"></a>-->
+
+							<div class="panel-body" style="text-align:center;">
+
+
+<div class="row show-grid">
+										<div class="col-md-1" style="background:#1e7799; width:130px; color:white; height:101px; margin-right:2px;"><h6 style="line-height : 15px; ">Porcentaje de carga ejecutada durante el período (HH)
+										</h6><h4 style="margin-top:-5px;">{% if porcentaje_total_unidad == 0 or porcentaje_total_unidad == '0.0' %}-{% else %} {{porcentaje_total_unidad}}% {% endif %}</h4></div>
+
+
+										<div class="col-md-10" style="background:#ed7d31; color:white; height:20px; margin-bottom:1px; width:84.2%;" ><span class="show-grid-block">Distribución por Cargos</span></div>
+
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px; " ><h6>Jefe Dpto.</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px; " ><h6>Jefe SubDpto.</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px; " ><h6 style="margin-left:-11px; font-size:10px; margin-top:20px;">Coordinadores</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px; "><h6 style="margin-left:-8px; font-size:11px; margin-top:20px;" >Supervisores</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px; "><h6  style="margin-left:-8px; font-size:11px;">Analistas Especialistas</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px;"><h6 style="margin-left:-6px; font-size:12px; margin-top:18px;" >Analistas</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px;"><h6 style="font-size:11px; margin-left:-9px; text-align:center; ">Supervisores</h6><h6 style=" font-size:11px; margin-left:-5px;   margin-top:-8px;">Operativos</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px;"><h6 style="margin-left:-6px; font-size:12px; margin-top:18px;">Operativos</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px;"><h6 style="margin-left:-6px; font-size:12px; margin-top:18px;">Asistentes</h6></div>
+										<div class="col-md-1" style="background:#dddddd; margin-right:1px; height:44px;"><h6 style="margin-left:-6px; font-size:12px; margin-top:18px;">Auxiliares</h6></div>
+
+
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;" >{% if porcentaje_jefe_departamento == 0 or porcentaje_jefe_departamento == '0.0' %}0{% else %} {{porcentaje_jefe_departamento}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_jefe_subdepartamento == 0 or porcentaje_jefe_subdepartamento == '0.0' %}0{% else %}{{porcentaje_jefe_subdepartamento}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_coordinadores == 0 or porcentaje_coordinadores == '0.0' %}0{% else %}{{porcentaje_coordinadores}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_supervisores == 0 or porcentaje_supervisores == '0.0' %}0{% else %}{{porcentaje_supervisores}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_analistas_especialistas == 0 or porcentaje_analistas_especialistas == '0.0' %}0{% else %}{{porcentaje_analistas_especialistas}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;" >{% if porcentaje_analista == 0 or porcentaje_analista == '0.0' %}0{% else %}{{porcentaje_analista}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_supervisores_operativos == 0 or porcentaje_supervisores_operativos == '0.0' %}0{% else %}{{porcentaje_supervisores_operativos}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_operativos == 0 or porcentaje_operativos == '0.0' %}0{% else %}{{porcentaje_operativos}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_asistentes == 0 or porcentaje_asistentes == '0.0' %}0{% else %}{{porcentaje_asistentes}}% {% endif %}</h6></div>
+										<div class="col-md-1" style="background:#70ad47; color:white; margin-right:1px; height:36px;" ><h6 style="margin-top:10px;">{% if porcentaje_auxiliares == 0 or porcentaje_auxiliares == '0.0' %}0{% else %}{{porcentaje_auxiliares}}% {% endif %}</h6></div>
+
+
+
+
+
+									</div>
+
+
+
+							</div>
+						</section>
+									</div>
+</div>
+	</div>
+
+
+
+
+<!--Fin cabecera del modal -->
+        <div class="modal fade" id="observacion_center" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+				<header class="panel-heading">
+				<div class="panel-actions">
+				<a class="fa fa-times" data-dismiss="modal"></a>
+				</div>
+				<h2 class="panel-title">Detalle</h2>
+			</header>
+
+              <div class="modal-body">
+               	<textarea id="txt_obs_campo_expand" rows="15" cols="80" class="form-control" style="width:100%;resize: none; " maxlength="5000" readonly  ></textarea>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+
+
+	{% endblock %}
